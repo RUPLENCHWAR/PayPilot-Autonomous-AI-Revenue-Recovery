@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  @apply bg-mist-50 text-ink-900 antialiased;
+  background-image:
+    radial-gradient(1200px 500px at 0% -10%, rgba(47, 125, 225, 0.08), transparent 55%),
+    radial-gradient(900px 400px at 100% 0%, rgba(31, 157, 110, 0.06), transparent 50%);
+}
+
+.panel {
+  @apply rounded-2xl border border-ink-900/5 bg-white shadow-panel;
+}
+
+.eyebrow {
+  @apply text-[11px] font-semibold uppercase tracking-[0.18em] text-mist-400;
+}
