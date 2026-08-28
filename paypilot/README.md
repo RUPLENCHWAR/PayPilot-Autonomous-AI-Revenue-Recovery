@@ -1,184 +1,415 @@
-# PayPilot
+# PayPilot — Autonomous AI Revenue Recovery
 
-Autonomous AI revenue recovery agent that turns failed and abandoned Razorpay payments into structured recovery actions — then executes them safely.
+> **Turn failed payments into recoverable revenue — intelligently, safely, and autonomously.**
 
-## Problem
+PayPilot is an AI-powered revenue recovery system built for the **Razorpay AI Builder Internship 2026 — Track 3: AI Revenue Recovery**.
 
-Merchants lose revenue after a payment fails, a checkout is abandoned, or a recurring charge declines. Most payment dashboards stop at reporting. They show that money was lost. They do not decide what to do next, they do not enforce a safety policy, and they do not close the loop back to recovered cash.
+Instead of blindly retrying every failed payment, PayPilot analyzes transaction context and customer behavior, estimates recovery probability and expected value, chooses the most suitable recovery strategy, and executes the action within merchant-defined safety boundaries.
 
-## Solution
+---
 
-PayPilot is an operations layer on top of Razorpay:
+## 🚀 The Problem
 
-1. Ingest transaction and customer history  
-2. Score recoverable leakage with a transparent demo model  
-3. Generate a structured recovery decision (local engine or OpenAI)  
-4. Validate the decision with **RecoveryGuard**  
-5. Create a Razorpay Payment Link (test) or a labelled demo link  
-6. Record webhooks or demo simulations  
-7. Update actual recovered revenue — never a hardcoded KPI
+A failed payment does not necessarily mean lost revenue.
 
-## Why a payment dashboard is not enough
+Different failures require different interventions:
 
-A dashboard can tell you *what failed*. PayPilot answers *whether it is recoverable*, *which action to take*, *whether a human must approve*, and *whether the money actually came back*.
+- Temporary failures may benefit from a retry.
+- Customers with strong payment history may be better suited for a payment link.
+- Some customers may need a reminder.
+- High-value or risky transactions may require human approval.
+- Some failures should simply receive no further action.
 
-## How it works
+Traditional recovery systems often rely on fixed retry rules.
 
-Transaction data → Revenue intelligence → AI recovery decision → RecoveryGuard → Razorpay action → payment status → recovered revenue.
+**PayPilot makes recovery an intelligent decision.**
 
-## Architecture
+---
 
-See [docs/architecture.md](docs/architecture.md).
+## 💡 Our Solution
 
-## AI agents
+PayPilot creates an autonomous recovery loop:
 
-- **Revenue Agent** scores leakage from ledger features.  
-- **Recovery Agent** recommends `retry`, `payment_link`, `reminder`, `manual_review`, or `no_action`.  
-- **RecoveryGuard** blocks duplicates, refunds, over-limit amounts, and high-risk actions.  
-- **Razorpay Agent** creates payment links or records demo links.
+```text
+Failed Payment
+      ↓
+Revenue Intelligence
+      ↓
+Customer Intelligence
+      ↓
+Recovery Probability
+      ↓
+Expected Recovery / ROI
+      ↓
+AI Recovery Strategist
+      ↓
+RecoveryGuard
+      ↓
+Razorpay
+      ↓
+Payment Event / Webhook
+      ↓
+Recovered Revenue
+      ↓
+Revenue Analytics
 
-If `OPENAI_API_KEY` is missing, recommendations still run on the **local recovery engine**. The UI labels the source honestly.
+The goal is not to maximize the number of retries.
 
-## RecoveryGuard
+The goal is to maximize valuable recovered revenue while minimizing unnecessary actions and risk.
 
-- Amounts ≤ ₹10,000 and low risk may auto-execute.  
-- Amounts > ₹10,000 require human approval.  
-- High-risk actions always require approval.  
-- Refunds never execute autonomously.
+🤖 AI Recovery Decision
 
-## Razorpay integration
+For every recovery opportunity, PayPilot evaluates:
 
-Official API: `POST https://api.razorpay.com/v1/payment_links`  
-Amounts are sent in paise. Secrets stay on the backend.
+Transaction amount
+Failure reason
+Customer payment history
+Successful payments
+Failed payments
+Customer lifetime value
+Previous recovery attempts
+Recovery probability
+Expected recovery
+Risk level
+Merchant autonomy policy
 
-| `RAZORPAY_MODE` | Credentials | Behaviour |
-| --- | --- | --- |
-| `demo` (default) | optional | Labelled demo link, no Razorpay call |
-| `test` | key id + secret required | Real Razorpay Test API. Failures are shown, never faked. |
+The system then selects a recovery strategy such as:
 
-Webhook: `POST /api/webhooks/razorpay` verifies `X-Razorpay-Signature` when a webhook secret is configured.
+Silent Retry
+Payment Link
+Reminder
+Payment Method Change
+Human Review
+No Action
 
-## Tech stack
+The AI also explains:
 
-- Frontend: Next.js (App Router), TypeScript, Tailwind CSS, Recharts  
-- Backend: FastAPI, Pydantic, SQLAlchemy, SQLite  
-- AI: OpenAI optional, deterministic fallback  
-- Payments: Razorpay Payment Links (test) or demo mode  
+Why this customer?
+Why recover?
+Why this strategy?
+Why not the alternatives?
+🧠 Hybrid AI Architecture
 
-This is a hackathon MVP, not production-ready software.
+PayPilot intentionally does not give an LLM unrestricted control over financial actions.
 
-## Setup (Windows PowerShell)
+                    ┌─────────────────────┐
+                    │   Payment Signals   │
+                    └──────────┬──────────┘
+                               ↓
+                    ┌─────────────────────┐
+                    │ Revenue Intelligence│
+                    │ Deterministic Logic  │
+                    └──────────┬──────────┘
+                               ↓
+                    ┌─────────────────────┐
+                    │ Recovery Probability│
+                    │ Expected Value / ROI │
+                    └──────────┬──────────┘
+                               ↓
+                    ┌─────────────────────┐
+                    │ AI Recovery         │
+                    │ Strategist           │
+                    └──────────┬──────────┘
+                               ↓
+                    ┌─────────────────────┐
+                    │   RecoveryGuard      │
+                    │ Policy Enforcement   │
+                    └──────────┬──────────┘
+                               ↓
+                    ┌─────────────────────┐
+                    │      Razorpay        │
+                    └──────────┬──────────┘
+                               ↓
+                         Payment Event
+                               ↓
+                    ┌─────────────────────┐
+                    │ Revenue Ledger      │
+                    └─────────────────────┘
+Deterministic layer
 
-Open **two terminals**. One for the API, one for the UI.
+Responsible for:
 
-### Backend (terminal 1)
+Financial calculations
+Recovery probability
+Expected recovery
+ROI
+Amount limits
+Duplicate prevention
+State validation
+Safety policies
+AI layer
 
-```powershell
-cd C:\Users\ASUS\Desktop\paypilot\backend
+Responsible for:
+
+Recovery strategy selection
+Contextual reasoning
+Alternative comparison
+Explanations
+Customer-facing messaging
+Natural-language analysis
+
+This separation ensures that the LLM can recommend, but cannot bypass financial safety controls.
+
+🛡️ RecoveryGuard
+
+RecoveryGuard is the safety layer between AI decisions and financial execution.
+
+Merchants can define:
+
+Autonomous Recovery: ON/OFF
+
+Maximum Autonomous Amount: ₹10,000
+
+Allowed:
+✓ Payment Link
+✓ Retry
+✓ Reminder
+
+Restricted:
+⚠ High-value actions
+⚠ High-risk actions
+✕ Refunds
+
+If an opportunity exceeds the merchant's configured autonomy limit, PayPilot automatically escalates it for human approval.
+
+This creates:
+
+AI autonomy + merchant control + financial guardrails
+
+📊 Expected Recovery & ROI
+
+PayPilot distinguishes between:
+
+Revenue at Risk
+
+Total value of failed payments.
+
+Expected Recovery
+
+Estimated recoverable amount based on recovery probability.
+
+Expected Recovery =
+Transaction Amount × Recovery Probability
+Expected Net Recovery
+Expected Net Recovery =
+Expected Recovery − Estimated Recovery Cost
+Recovery ROI
+Recovery ROI =
+Expected Net Recovery / Estimated Recovery Cost
+
+Recovery cost is configurable/demo-based and is clearly presented as an estimate rather than an actual operational cost.
+
+🔍 Recovery Simulator
+
+The Recovery Simulator allows merchants to understand the effect of different autonomy policies.
+
+A merchant can change the autonomous recovery limit and immediately see:
+
+Autonomous opportunities
+Human approval opportunities
+Expected recovery
+Additional expected recovery unlocked
+
+This turns autonomy from a fixed setting into a measurable business decision.
+
+🧩 Agent Trace
+
+Every recovery workflow can be followed through an agent trace:
+
+Revenue Agent
+     ↓
+Customer Intelligence
+     ↓
+Recovery Agent
+     ↓
+Recovery Strategist
+     ↓
+RecoveryGuard
+     ↓
+Razorpay Agent
+     ↓
+Webhook
+     ↓
+Revenue Ledger
+
+The trace provides visibility into:
+
+Agent
+Decision
+Status
+Timestamp
+Reason
+Risk level
+
+This creates an auditable recovery workflow rather than a black-box AI decision.
+
+💳 Razorpay Integration
+
+PayPilot is designed to work with:
+
+Demo Mode
+
+A safe environment for demonstrating the complete workflow without real financial transactions.
+
+Razorpay Test Mode
+
+Uses Razorpay's test environment for payment-link and payment-event workflows.
+
+The application keeps financial credentials strictly on the backend.
+
+Production payments are not enabled by default.
+
+🔄 Recovery Flow
+
+Example:
+
+₹12,999 payment fails
+        ↓
+PayPilot detects revenue at risk
+        ↓
+Customer history analyzed
+        ↓
+Recovery probability = 88%
+        ↓
+Expected recovery calculated
+        ↓
+AI compares strategies
+        ↓
+Payment Link selected
+        ↓
+RecoveryGuard checks policy
+        ↓
+Action approved
+        ↓
+Razorpay payment link created
+        ↓
+Customer completes payment
+        ↓
+Webhook received
+        ↓
+Payment verified
+        ↓
+Revenue ledger updated
+        ↓
+₹12,999 recovered
+
+The system closes the loop from payment failure → decision → execution → measurable recovery.
+
+🔐 Reliability & Safety
+
+PayPilot includes safeguards for:
+
+Duplicate recovery prevention
+Recovered-state protection
+Unique payment references
+Webhook idempotency
+Webhook signature verification
+Autonomous amount limits
+High-risk action restrictions
+Human approval escalation
+Backend-only financial credentials
+AI fallback when an LLM API is unavailable
+
+A payment event cannot simply be counted multiple times because the same webhook was received repeatedly.
+
+🏗️ Project Structure
+paypilot/
+│
+├── backend/
+│   ├── app/
+│   │   ├── agents/
+│   │   ├── api/
+│   │   ├── services/
+│   │   ├── models.py
+│   │   └── main.py
+│   │
+│   ├── tests/
+│   ├── requirements.txt
+│   └── .env.example
+│
+├── frontend/
+│   ├── app/
+│   ├── components/
+│   ├── lib/
+│   ├── package.json
+│   └── .env.example
+│
+├── docs/
+│   ├── architecture.md
+│   └── demo-script.md
+│
+├── .gitignore
+└── README.md
+⚙️ Tech Stack
+Frontend
+Next.js
+React
+TypeScript
+Tailwind CSS
+Recharts
+Backend
+Python
+FastAPI
+SQLAlchemy
+Pydantic
+AI
+OpenAI-compatible LLM integration
+Deterministic fallback strategy engine
+Payments
+Razorpay APIs
+Razorpay Test Mode
+Webhooks
+Database
+SQLite for local/demo development
+SQLAlchemy ORM
+🛠️ Local Setup
+1. Clone the repository
+git clone <YOUR_GITHUB_REPOSITORY_URL>
+cd paypilot
+2. Backend
+cd backend
+
 python -m venv venv
-.\venv\Scripts\Activate.ps1
+
+Windows:
+
+venv\Scripts\activate
+
+Install dependencies:
+
 pip install -r requirements.txt
-copy .env.example .env
+
+Create your environment file:
+
+backend/.env
+
+using:
+
+backend/.env.example
+
+Start the backend:
+
 uvicorn app.main:app --reload
-```
 
-The API seeds a deterministic SQLite ledger on first start.
+Backend:
 
-- Backend: [http://localhost:8000](http://localhost:8000)  
-- OpenAPI: [http://localhost:8000/docs](http://localhost:8000/docs)
+http://127.0.0.1:8000
 
-### Frontend (terminal 2)
+API documentation:
 
-```powershell
-cd C:\Users\ASUS\Desktop\paypilot\frontend
-copy .env.example .env.local
+http://127.0.0.1:8000/docs
+3. Frontend
+
+Open another terminal:
+
+cd frontend
 npm install
 npm run dev
-```
 
-- Frontend: [http://localhost:3000](http://localhost:3000)
+Frontend:
 
-## Environment variables
+http://localhost:3000
 
-Copy `backend/.env.example` to `backend/.env` (do not commit `.env`).
+Dashboard:
 
-```
-RAZORPAY_KEY_ID=
-RAZORPAY_KEY_SECRET=
-RAZORPAY_WEBHOOK_SECRET=
-OPENAI_API_KEY=
-RAZORPAY_MODE=demo
-AI_MODE=local
-DATABASE_URL=sqlite:///./paypilot.db
-FRONTEND_URL=http://localhost:3000
-AUTONOMOUS_AMOUNT_LIMIT=10000
-```
-
-Frontend: `NEXT_PUBLIC_API_URL=http://localhost:8000`
-
-Leave Razorpay and OpenAI keys empty for a full local demo.
-
-To use Razorpay Test Mode, put **test** keys in `.env` and set `RAZORPAY_MODE=test`. Never use live keys for this project. Test payments are not real settlements.
-
-To use OpenAI, set `OPENAI_API_KEY` and `AI_MODE=openai`. Otherwise the local engine is used.
-
-## Demo mode
-
-The header shows **Demo Mode** when no live Razorpay test call is made. After Recover, open the opportunity and use **Simulate Success** / **Simulate Failure**. That path is blocked when Razorpay test mode is on — real captures must arrive via webhook.
-
-## Testing
-
-```powershell
-cd C:\Users\ASUS\Desktop\paypilot\backend
-.\venv\Scripts\Activate.ps1
-pytest
-```
-
-## API surface
-
-- `GET /api/dashboard`  
-- `GET /api/transactions`  
-- `GET /api/recovery/opportunities`  
-- `GET /api/customers`  
-- `GET /api/agent/activity`  
-- `POST /api/recovery/{id}/analyze`  
-- `POST /api/recovery/{id}/execute`  
-- `POST /api/recovery/{id}/approve`  
-- `POST /api/recovery/{id}/simulate-success`  
-- `POST /api/recovery/{id}/simulate-failure`  
-- `POST /api/webhooks/razorpay`  
-- `POST /api/command`
-
-## Project structure
-
-```
-backend/app/          FastAPI, agents, services, seed
-backend/tests/        scoring, guard, recovery, API tests
-frontend/app/         Next.js pages
-docs/                 architecture + 5-minute demo script
-```
-
-## Screenshots
-
-Add screenshots here after a local run:
-
-- Dashboard hero (revenue at risk vs AI recoverable)  
-- Recovery Center card with RecoveryGuard label  
-- Agent activity timeline  
-- Demo payment simulation  
-
-## Future improvements
-
-- PostgreSQL in production  
-- Recurring mandate retries  
-- Merchant auth and audit roles  
-- Richer webhook coverage  
-- Calibrated recovery models (this repo uses a **demo** scorer)
-
-## Limitations
-
-- Not production-ready.  
-- Recovery probability is a transparent heuristic, not a validated credit model.  
-- Demo simulation is not a Razorpay settlement.  
-- No merchant authentication layer.  
-- SQLite is for local development only.
+http://localhost:3000/dashboard
